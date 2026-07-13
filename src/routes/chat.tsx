@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useChat } from "@ai-sdk/react";
-import { Chat, DefaultChatTransport, type UIMessage } from "ai";
+import { useChat, Chat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, Sparkles, Trash2, User, Bot, StopCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
