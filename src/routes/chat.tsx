@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
-import { useEffect, useRef, useState } from "react";
+import { Chat, DefaultChatTransport, type UIMessage } from "ai";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, Sparkles, Trash2, User, Bot, StopCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { useLocalStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+
+const STORAGE_KEY = "copilot.chat.messages";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
@@ -28,31 +29,40 @@ const suggestions = [
 ];
 
 function ChatPage() {
-  const [persisted, setPersisted, hydrated] = useLocalStorage<UIMessage[]>(
-    "copilot.chat.messages",
-    [],
-  );
+  // One-time hydration from localStorage (client-only)
+  const [initial] = useState<UIMessage[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as UIMessage[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [resetKey, setResetKey] = useState(0);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { messages, sendMessage, status, setMessages, stop } = useChat({
-    id: "copilot",
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
-  });
+  const chat = useMemo(
+    () =>
+      new Chat<UIMessage>({
+        id: `copilot-${resetKey}`,
+        transport: new DefaultChatTransport({ api: "/api/chat" }),
+        messages: resetKey === 0 ? initial : [],
+      }),
+    [resetKey, initial],
+  );
 
-  // Hydrate messages from localStorage once.
+  const { messages, sendMessage, status, stop } = useChat({ chat });
+
   useEffect(() => {
-    if (hydrated && persisted.length > 0 && messages.length === 0) {
-      setMessages(persisted);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch {
+      // ignore
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
-
-  // Persist on change.
-  useEffect(() => {
-    if (hydrated) setPersisted(messages);
-  }, [messages, hydrated, setPersisted]);
+  }, [messages]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -60,7 +70,7 @@ function ChatPage() {
 
   useEffect(() => {
     textareaRef.current?.focus();
-  }, [status]);
+  }, [status, resetKey]);
 
   const isBusy = status === "submitted" || status === "streaming";
 
@@ -72,8 +82,12 @@ function ChatPage() {
   };
 
   const handleClear = () => {
-    setMessages([]);
-    setPersisted([]);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setResetKey((k) => k + 1);
   };
 
   return (
