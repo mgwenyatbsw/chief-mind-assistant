@@ -73,19 +73,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Copilot — Your AI Chief of Staff" },
+      { title: "Dashboard — Copilot" },
       {
         name: "description",
         content:
-          "Copilot is a premium AI workspace that drafts emails, answers work questions, and helps you make better decisions faster.",
+          "Your AI workspace at a glance.",
       },
-      { property: "og:title", content: "Copilot — Your AI Chief of Staff" },
+      { property: "og:title", content: "Dashboard — Copilot" },
       {
         property: "og:description",
-        content: "Draft emails, chat with an AI assistant, and run your day from one polished workspace.",
+        content: "Your AI workspace at a glance.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Dashboard — Copilot" },
+      { name: "twitter:description", content: "Your AI workspace at a glance." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f527a380-7579-4469-9ecc-97cadc79843c/id-preview-a6edd657--4dceeafd-16a7-4364-ac4d-9058d68e5aff.lovable.app-1783946480315.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f527a380-7579-4469-9ecc-97cadc79843c/id-preview-a6edd657--4dceeafd-16a7-4364-ac4d-9058d68e5aff.lovable.app-1783946480315.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
